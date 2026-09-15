@@ -39,6 +39,33 @@ class LocationTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource
+    void testValidateY(final int y) {
+        val x = Location.MIN_X;
+
+        val result = Location.create(x, y);
+
+        if (y < Location.MIN_Y || y > Location.MAX_Y) {
+            assertThat(result.isFailure()).isTrue();
+            assertThat(result.getError().getCode()).isEqualTo("value.is.out.of.range");
+        } else {
+            assertThat(result.isFailure()).isFalse();
+            assertThat(result.getValue().getX()).isEqualTo(x);
+            assertThat(result.getValue().getY()).isEqualTo(y);
+        }
+    }
+
+    static Stream<Arguments> testValidateY() {
+        return Stream.of(
+            Arguments.of(Location.MIN_Y),
+            Arguments.of(Location.MAX_Y),
+            Arguments.of((Location.MAX_Y - Location.MIN_Y) / 2),
+            Arguments.of(Location.MIN_Y - 1),
+            Arguments.of(Location.MAX_Y + 1)
+        );
+    }
+
     @Test
     void testComputeDistance() {
         val from = Location.create(2, 6).getValue();
