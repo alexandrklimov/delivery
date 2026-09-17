@@ -11,7 +11,6 @@ import lombok.val;
 
 import java.util.List;
 
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Location extends ValueObject<Location> {
@@ -25,27 +24,20 @@ public class Location extends ValueObject<Location> {
     private final int y;
 
     public static Result<Location, Error> create(final int x, final int y) {
-        val err = Guard.combine(
-            Guard.againstOutOfRange(x, MIN_X, MAX_X, "x"),
-            Guard.againstOutOfRange(y, MIN_Y, MAX_Y, "y")
-        );
+        val err = Guard.combine(Guard.againstOutOfRange(x, MIN_X, MAX_X, "x"),
+                Guard.againstOutOfRange(y, MIN_Y, MAX_Y, "y"));
 
-        return (err == null) ?
-            Result.success(new Location(x, y)) :
-            Result.failure(err);
+        return (err == null) ? Result.success(new Location(x, y)) : Result.failure(err);
 
     }
 
-    public static Result<Distance, Error> computeDistance(final Location from, final Location to) {
-        val err = Guard.combine(
-            (from == null) ? Error.of("object.is.null", "'Location from' must not be NULL!") : null,
-            (to == null) ? Error.of("object.is.null", "'Location to' must not be NULL!") : null
-        );
+    public Result<Distance, Error> computeDistance(final Location to) {
+        val err = (to == null) ? Error.of("object.is.null", "'Location to' must not be NULL!") : null;
 
         if (err != null)
             return Result.failure(err);
 
-        val distanceValue = Math.abs(to.getX() - from.getX()) + Math.abs(to.getY() - from.getY());
+        val distanceValue = Math.abs(to.getX() - x) + Math.abs(to.getY() - y);
         return Distance.create(distanceValue);
     }
 

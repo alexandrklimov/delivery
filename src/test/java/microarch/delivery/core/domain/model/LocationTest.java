@@ -30,13 +30,9 @@ class LocationTest {
     }
 
     static Stream<Arguments> testValidateX() {
-        return Stream.of(
-            Arguments.of(Location.MIN_X),
-            Arguments.of(Location.MAX_X),
-            Arguments.of((Location.MAX_X - Location.MIN_X) / 2),
-            Arguments.of(Location.MIN_X - 1),
-            Arguments.of(Location.MAX_X + 1)
-        );
+        return Stream.of(Arguments.of(Location.MIN_X), Arguments.of(Location.MAX_X),
+                Arguments.of((Location.MAX_X - Location.MIN_X) / 2), Arguments.of(Location.MIN_X - 1),
+                Arguments.of(Location.MAX_X + 1));
     }
 
     @ParameterizedTest
@@ -57,13 +53,9 @@ class LocationTest {
     }
 
     static Stream<Arguments> testValidateY() {
-        return Stream.of(
-            Arguments.of(Location.MIN_Y),
-            Arguments.of(Location.MAX_Y),
-            Arguments.of((Location.MAX_Y - Location.MIN_Y) / 2),
-            Arguments.of(Location.MIN_Y - 1),
-            Arguments.of(Location.MAX_Y + 1)
-        );
+        return Stream.of(Arguments.of(Location.MIN_Y), Arguments.of(Location.MAX_Y),
+                Arguments.of((Location.MAX_Y - Location.MIN_Y) / 2), Arguments.of(Location.MIN_Y - 1),
+                Arguments.of(Location.MAX_Y + 1));
     }
 
     @Test
@@ -72,8 +64,8 @@ class LocationTest {
         val to = Location.create(4, 9).getValue();
         val expectedDistance = 5;
 
-        val result = Location.computeDistance(from, to);
-        val resultReverse = Location.computeDistance(to, from);
+        val result = from.computeDistance(to);
+        val resultReverse = to.computeDistance(from);
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getValue()).isEqualTo(expectedDistance);
