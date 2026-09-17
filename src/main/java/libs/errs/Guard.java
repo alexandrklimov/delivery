@@ -62,7 +62,7 @@ public final class Guard {
     public static <T extends Comparable<T>> Error againstLessThan(T value, T min, String paramName) {
 
         if (value == null || value.compareTo(min) < 0) {
-            return GeneralErrors.valueMustBeLessThan(paramName, value, min);
+            return GeneralErrors.valueMustBeGreaterThan(paramName, value, min);
         }
 
         return null;
