@@ -55,7 +55,7 @@ class DistanceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {-2, 0, 100500})
+    @ValueSource(ints = { -2, 0, 100500 })
     void testValueValidation(final int value) {
         val result = Distance.create(value);
 

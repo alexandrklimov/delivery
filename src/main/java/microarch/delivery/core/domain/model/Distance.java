@@ -21,9 +21,7 @@ public class Distance extends ValueObject<Distance> {
     public static Result<Distance, Error> create(final int distanceValue) {
         val err = Guard.againstLessThan(distanceValue, MIN_VALUE, "distanceValue");
 
-        return (err == null) ?
-            Result.success(new Distance(distanceValue)) :
-            Result.failure(err);
+        return (err == null) ? Result.success(new Distance(distanceValue)) : Result.failure(err);
     }
 
     @Override
