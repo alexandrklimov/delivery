@@ -48,8 +48,8 @@ class AssignmentTest {
 
     static Stream<Arguments> testCreateWithNullArgument() {
         return Stream.of(Arguments.of(null, Volume.create(10).getValue(), Location.create(5, 5).getValue()),
-                Arguments.of(UUID.randomUUID(), null, Location.create(5, 5).getValue()),
-                Arguments.of(UUID.randomUUID(), Volume.create(10).getValue(), null));
+            Arguments.of(UUID.randomUUID(), null, Location.create(5, 5).getValue()),
+            Arguments.of(UUID.randomUUID(), Volume.create(10).getValue(), null));
     }
 
     @Test
@@ -92,5 +92,17 @@ class AssignmentTest {
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError().getCode()).isEqualTo("out.of.completion.zone");
         assertThat(assignment.getStatus()).isEqualTo(Status.Assigned);
+    }
+
+    @Test
+    void testCompleteAlreadyCompleted() {
+        val assignment = createAssignment().getValue();
+        assignment.complete(Location.create(5, 5).getValue());
+
+        val result = assignment.complete(Location.create(5, 5).getValue());
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError().getCode()).isEqualTo("assignment.wrong.transition");
+        assertThat(assignment.getStatus()).isEqualTo(Status.Completed);
     }
 }
