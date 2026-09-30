@@ -54,6 +54,28 @@ public class Courier extends Aggregate<UUID> {
         return Set.copyOf(orderIdToAssignMap.values());
     }
 
+    /**
+     * Checks whether the courier can take one more order with the given volume without exceeding the max allowed volume
+     * (MAX_VOLUME).
+     *
+     * <p>
+     * Contract — this is NOT a plain predicate, failure is an expected outcome:
+     * <ul>
+     * <li>{@code Result.success(true)} — the volume fits, the courier is eligible;</li>
+     * <li>{@code Result.failure("courier.maxvol.restriction")} — the courier is overloaded for this volume. This is a
+     * normal business answer, not a contract violation: callers must branch on
+     * {@link Result#isSuccess()}/{@link Result#isFailure()} and must NOT call {@link Result#getValueOrThrow()}.</li>
+     * </ul>
+     *
+     * <p>
+     * Note: on success the value is always {@code true}; the {@code Boolean} payload is redundant and may be dropped in
+     * favor of {@code Result<Void, Error>} in the future.
+     *
+     * @param newOrderVolume
+     *            must not be null
+     *
+     * @return success(true) if the volume fits; failure with the restriction error otherwise
+     */
     public Result<Boolean, Error> checkCanAssignOneMore(@NotNull Volume newOrderVolume) {
         if (newOrderVolume == null) {
             return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "newOrderVolume must not be null"));
