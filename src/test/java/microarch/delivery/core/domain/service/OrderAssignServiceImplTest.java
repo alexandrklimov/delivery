@@ -64,9 +64,9 @@ class OrderAssignServiceImplTest {
     @MethodSource
     void testAssignNonCreatedOrderFails(final OrderStatus status) {
         val order = createOrder(5, 5, 5);
-        order.changeStatus(OrderStatus.Assigned);
+        order.markAsAssigned();
         if (status == OrderStatus.Completed) {
-            order.changeStatus(OrderStatus.Completed);
+            order.markAsCompleted();
         }
 
         val result = service.assign(order, List.of(createCourier(5, 6)));

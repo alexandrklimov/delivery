@@ -40,9 +40,9 @@ public class OrderAssignServiceImpl implements OrderAssignService {
             if (assignResult.isFailure())
                 return assignResult;
 
-            val changeStatusRes = order.changeStatus(OrderStatus.Assigned);
-            if (changeStatusRes.isFailure())
-                return Result.failure(changeStatusRes.getError());
+            val markAssignedRes = order.markAsAssigned();
+            if (markAssignedRes.isFailure())
+                return Result.failure(markAssignedRes.getError());
 
             return Result.success(nearestCourier);
         } else {
