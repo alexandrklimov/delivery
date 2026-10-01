@@ -48,8 +48,8 @@ class AssignmentTest {
 
     static Stream<Arguments> testCreateWithNullArgument() {
         return Stream.of(Arguments.of(null, Volume.create(10).getValue(), Location.create(5, 5).getValue()),
-            Arguments.of(UUID.randomUUID(), null, Location.create(5, 5).getValue()),
-            Arguments.of(UUID.randomUUID(), Volume.create(10).getValue(), null));
+                Arguments.of(UUID.randomUUID(), null, Location.create(5, 5).getValue()),
+                Arguments.of(UUID.randomUUID(), Volume.create(10).getValue(), null));
     }
 
     @Test

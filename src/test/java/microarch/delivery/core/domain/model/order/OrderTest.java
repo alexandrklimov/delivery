@@ -24,9 +24,9 @@ class OrderTest {
         val order = Order.create(UUID.randomUUID(), Location.create(5, 5).getValue(), Volume.create(10).getValue())
                 .getValue();
         if (status != OrderStatus.Created)
-            order.changeStatus(OrderStatus.Assigned);
+            order.markAsAssigned();
         if (status == OrderStatus.Completed)
-            order.changeStatus(OrderStatus.Completed);
+            order.markAsCompleted();
         return order;
     }
 
@@ -62,15 +62,22 @@ class OrderTest {
     }
 
     @Test
-    void testChangeStatusByHappyPath() {
+    void testMarkAsAssignedSuccess() {
         val order = createOrder();
 
-        val assignResult = order.changeStatus(OrderStatus.Assigned);
+        val assignResult = order.markAsAssigned();
+
         assertThat(assignResult.isSuccess()).isTrue();
         assertThat(assignResult.getValue()).isSameAs(order);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.Assigned);
+    }
 
-        val completeResult = order.changeStatus(OrderStatus.Completed);
+    @Test
+    void testMarkAsCompletedSuccess() {
+        val order = createOrder(OrderStatus.Assigned);
+
+        val completeResult = order.markAsCompleted();
+
         assertThat(completeResult.isSuccess()).isTrue();
         assertThat(completeResult.getValue()).isSameAs(order);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.Completed);
@@ -78,34 +85,33 @@ class OrderTest {
 
     @ParameterizedTest
     @MethodSource
-    void testChangeStatusNotAllowed(final OrderStatus fromStatus, final OrderStatus targetStatus) {
+    void testMarkAsAssignedNotAllowed(final OrderStatus fromStatus) {
         val order = createOrder(fromStatus);
 
-        val result = order.changeStatus(targetStatus);
+        val result = order.markAsAssigned();
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError().getCode()).isEqualTo("order.transition.not.allowed");
         assertThat(order.getStatus()).isEqualTo(fromStatus);
     }
 
-    static Stream<Arguments> testChangeStatusNotAllowed() {
-        return Stream.of(Arguments.of(OrderStatus.Created, OrderStatus.Completed),
-                Arguments.of(OrderStatus.Created, OrderStatus.Created),
-                Arguments.of(OrderStatus.Assigned, OrderStatus.Assigned),
-                Arguments.of(OrderStatus.Assigned, OrderStatus.Created),
-                Arguments.of(OrderStatus.Completed, OrderStatus.Created),
-                Arguments.of(OrderStatus.Completed, OrderStatus.Assigned),
-                Arguments.of(OrderStatus.Completed, OrderStatus.Completed));
+    static Stream<Arguments> testMarkAsAssignedNotAllowed() {
+        return Stream.of(Arguments.of(OrderStatus.Assigned), Arguments.of(OrderStatus.Completed));
     }
 
-    @Test
-    void testChangeStatusNullTarget() {
-        val order = createOrder();
+    @ParameterizedTest
+    @MethodSource
+    void testMarkAsCompletedNotAllowed(final OrderStatus fromStatus) {
+        val order = createOrder(fromStatus);
 
-        val result = order.changeStatus(null);
+        val result = order.markAsCompleted();
 
         assertThat(result.isFailure()).isTrue();
-        assertThat(result.getError().getCode()).isEqualTo(Constants.ERR_CODE_OBJ_IS_NULL);
-        assertThat(order.getStatus()).isEqualTo(OrderStatus.Created);
+        assertThat(result.getError().getCode()).isEqualTo("order.transition.not.allowed");
+        assertThat(order.getStatus()).isEqualTo(fromStatus);
+    }
+
+    static Stream<Arguments> testMarkAsCompletedNotAllowed() {
+        return Stream.of(Arguments.of(OrderStatus.Created), Arguments.of(OrderStatus.Completed));
     }
 }
