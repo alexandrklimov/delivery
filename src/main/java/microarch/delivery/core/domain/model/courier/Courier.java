@@ -1,5 +1,10 @@
 package microarch.delivery.core.domain.model.courier;
 
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import libs.ddd.Aggregate;
 import libs.errs.Error;
@@ -7,6 +12,7 @@ import libs.errs.Guard;
 import libs.errs.Result;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Assignment;
@@ -20,15 +26,22 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Entity()
+@Table(name = "courier", indexes = { @Index(name = "courier_name", columnList = "name", unique = true) })
 @Getter
+@NoArgsConstructor(force = true)
 public class Courier extends Aggregate<UUID> {
     static final int MAX_VOLUME = 20;
     static final int STEP_SIZE = 1;
 
     private final String name;
+    @Embedded
     private Location location;
+    @Embedded
     private final Volume maxVolume = Volume.create(MAX_VOLUME).getValueOrThrow();
+
     @Getter(AccessLevel.NONE)
+    @Transient
     private final Map<UUID, Assignment> orderIdToAssignMap = new ConcurrentHashMap<>();
 
     private Courier(final String name, final Location location) {

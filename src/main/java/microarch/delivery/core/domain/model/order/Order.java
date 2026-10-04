@@ -1,10 +1,16 @@
 package microarch.delivery.core.domain.model.order;
 
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import libs.ddd.Aggregate;
 import libs.errs.Error;
 import libs.errs.Guard;
 import libs.errs.Result;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Location;
@@ -12,10 +18,17 @@ import microarch.delivery.core.domain.model.Volume;
 
 import java.util.UUID;
 
+@Entity
+@Table(name = "\"order\"")
 @Getter
+@NoArgsConstructor(force = true)
 public class Order extends Aggregate<UUID> {
+    @Embedded
     private final Location location;
+    @Embedded
     private final Volume volume;
+
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     private Order(UUID id, Location location, Volume volume, OrderStatus status) {
