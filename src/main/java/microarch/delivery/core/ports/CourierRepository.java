@@ -2,8 +2,8 @@ package microarch.delivery.core.ports;
 
 import jakarta.annotation.Nonnull;
 import microarch.delivery.core.domain.model.courier.Courier;
-import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,5 +19,5 @@ public interface CourierRepository {
     Optional<Courier> findById(final @Nonnull UUID id);
 
     @Nonnull
-    Page<Courier> getAll(int page, int size);
+    List<Courier> getAll();
 }

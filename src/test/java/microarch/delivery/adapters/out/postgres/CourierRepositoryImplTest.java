@@ -73,19 +73,13 @@ class CourierRepositoryImplTest extends BaseJpaTest {
 
     @Test
     void getAll() {
-        val couriers = courierJpaRepository
+        courierJpaRepository
                 .saveAllAndFlush(List.of(newCourier("courier-1"), newCourier("courier-2"), newCourier("courier-3")));
         val sortedIds = courierJpaRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().map(Courier::getId)
                 .toList();
 
-        val firstPage = courierRepositoryImpl.getAll(0, 2);
+        val all = courierRepositoryImpl.getAll();
 
-        assertThat(firstPage.getTotalElements()).isEqualTo(3);
-        assertThat(firstPage.getTotalPages()).isEqualTo(2);
-        assertThat(firstPage.getContent()).extracting(Courier::getId).containsExactly(sortedIds.get(0),
-                sortedIds.get(1));
-
-        val secondPage = courierRepositoryImpl.getAll(1, 2);
-        assertThat(secondPage.getContent()).extracting(Courier::getId).containsExactly(sortedIds.get(2));
+        assertThat(all).extracting(Courier::getId).containsExactlyElementsOf(sortedIds);
     }
 }

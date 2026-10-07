@@ -2,15 +2,13 @@ package microarch.delivery.adapters.out.postgres;
 
 import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
-import lombok.val;
 import microarch.delivery.core.domain.model.order.Order;
 import microarch.delivery.core.domain.model.order.OrderStatus;
 import microarch.delivery.core.ports.OrderRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,8 +44,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Nonnull
     @Override
-    public Page<Order> getAllInAssignedStatus(int page, int size) {
-        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
-        return orderJpaRepository.findAllByStatus(OrderStatus.Assigned, pageable);
+    public List<Order> getAllInAssignedStatus() {
+        return orderJpaRepository.findAllByStatus(OrderStatus.Assigned, Sort.by(Sort.Direction.ASC, "id"));
     }
 }

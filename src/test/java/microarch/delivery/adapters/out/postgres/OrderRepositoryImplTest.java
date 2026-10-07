@@ -108,11 +108,9 @@ class OrderRepositoryImplTest extends BaseJpaTest {
         val expectedIds = orderJpaRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().map(Order::getId)
                 .filter(id -> assignedIdSet.contains(id)).toList();
 
-        val page = orderRepositoryImpl.getAllInAssignedStatus(0, 2);
+        val all = orderRepositoryImpl.getAllInAssignedStatus();
 
-        assertThat(page.getContent()).extracting(Order::getId).containsExactlyElementsOf(expectedIds);
-        assertThat(page.getContent()).extracting(Order::getStatus).containsOnly(OrderStatus.Assigned);
-        assertThat(page.getTotalElements()).isEqualTo(2);
-        assertThat(page.getTotalPages()).isEqualTo(1);
+        assertThat(all).extracting(Order::getId).containsExactlyElementsOf(expectedIds);
+        assertThat(all).extracting(Order::getStatus).containsOnly(OrderStatus.Assigned);
     }
 }

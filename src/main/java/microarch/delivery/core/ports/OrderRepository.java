@@ -2,8 +2,8 @@ package microarch.delivery.core.ports;
 
 import jakarta.annotation.Nonnull;
 import microarch.delivery.core.domain.model.order.Order;
-import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,5 +22,5 @@ public interface OrderRepository {
     Optional<Order> getAnyInCreatedStatus();
 
     @Nonnull
-    Page<Order> getAllInAssignedStatus(int page, int size);
+    List<Order> getAllInAssignedStatus();
 }
