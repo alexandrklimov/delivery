@@ -19,7 +19,8 @@ public class CommandCreateValidationException extends RuntimeException {
         super(cause);
     }
 
-    public CommandCreateValidationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public CommandCreateValidationException(String message, Throwable cause, boolean enableSuppression,
+            boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

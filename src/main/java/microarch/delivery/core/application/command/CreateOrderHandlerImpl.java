@@ -21,25 +21,24 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
 
     @Override
     public Result<Order, Error> handle(CreateOrderCommand command) {
-        if(command == null)
-            return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "CreateOrderCommand command must not be null!"));
+        if (command == null)
+            return Result
+                    .failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "CreateOrderCommand command must not be null!"));
 
-        val locRes = resolveLocation(
-            command.country(), command.city(), command.street(), command.house(), command.apartment()
-        );
-        if(locRes.isFailure())
+        val locRes = resolveLocation(command.country(), command.city(), command.street(), command.house(),
+                command.apartment());
+        if (locRes.isFailure())
             return Result.failure(locRes.getError());
 
         val volumeRes = Volume.create(command.volume());
-        if(volumeRes.isFailure())
+        if (volumeRes.isFailure())
             return Result.failure(volumeRes.getError());
 
         val newOrderRes = Order.create(command.orderId(), locRes.getValue(), volumeRes.getValue());
-        if(newOrderRes.isFailure())
+        if (newOrderRes.isFailure())
             return Result.failure(newOrderRes.getError());
 
-        val persistedOrder = orderRepository.create(newOrderRes.getValueOrThrow());
-        return  Result.success(persistedOrder);
+        return Result.success(orderRepository.create(newOrderRes.getValueOrThrow()));
     }
 
     /**
@@ -50,11 +49,11 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
      * @param street
      * @param house
      * @param apartment
+     *
      * @return
      */
-    private Result<Location, Error> resolveLocation(
-        final String country, final String city, final String street, final String house, final String apartment
-    ) {
+    private Result<Location, Error> resolveLocation(final String country, final String city, final String street,
+            final String house, final String apartment) {
         val rnd = new Random();
         return Location.create(rnd.nextInt(1, 11), rnd.nextInt(1, 11));
     }

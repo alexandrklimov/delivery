@@ -113,4 +113,18 @@ class OrderRepositoryImplTest extends BaseJpaTest {
         assertThat(all).extracting(Order::getId).containsExactlyElementsOf(expectedIds);
         assertThat(all).extracting(Order::getStatus).containsOnly(OrderStatus.Assigned);
     }
+
+    @Test
+    void getAllByStatuses() {
+        val completedOrder = newAssignedOrder();
+        completedOrder.markAsCompleted();
+
+        val created = orderJpaRepository.saveAndFlush(newOrder());
+        val assigned = orderJpaRepository.saveAndFlush(newAssignedOrder());
+        orderJpaRepository.saveAndFlush(completedOrder);
+
+        val all = orderRepositoryImpl.getAllByStatuses(List.of(OrderStatus.Created, OrderStatus.Assigned));
+
+        assertThat(all).extracting(Order::getId).containsExactlyInAnyOrder(created.getId(), assigned.getId());
+    }
 }

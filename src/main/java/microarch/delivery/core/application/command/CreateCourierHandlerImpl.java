@@ -17,15 +17,14 @@ public class CreateCourierHandlerImpl implements CreateCourierHandler {
     private final CourierRepository courierRepository;
 
     @Override
-    public Result<Courier, Error> handler(CreateCourierCommand command) {
-        if(command == null)
+    public Result<Courier, Error> handler(final CreateCourierCommand command) {
+        if (command == null)
             return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "command must not be null"));
 
-        val newCourierRes = Courier.create(command.name(), Location.create(1,1).getValue());
-        if(newCourierRes.isFailure())
+        val newCourierRes = Courier.create(command.name(), Location.create(1, 1).getValue());
+        if (newCourierRes.isFailure())
             return Result.failure(newCourierRes.getError());
 
-        val persisted = courierRepository.create(newCourierRes.getValue());
-        return Result.success(persisted);
+        return Result.success(courierRepository.create(newCourierRes.getValue()));
     }
 }

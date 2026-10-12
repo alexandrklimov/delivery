@@ -11,32 +11,26 @@ import java.util.UUID;
  * @param city
  * @param street
  * @param house
- * @param apartment may be NULL or blank
+ * @param apartment
+ *            may be NULL or blank
  * @param volume
  */
-public record CreateOrderCommand (
-    UUID orderId, 
-    String country,
-    String city,
-    String street,
-    String house,
-    String apartment,
-    int volume
-) {
+public record CreateOrderCommand(UUID orderId, String country, String city, String street, String house,
+        String apartment, int volume) {
     public CreateOrderCommand {
-        if(orderId == null){
+        if (orderId == null) {
             throw new CommandCreateValidationException("orderId is must not be null");
         }
-        if(!StringUtils.hasText(country)) {
+        if (!StringUtils.hasText(country)) {
             throw new CommandCreateValidationException("country must not be empty");
         }
-        if(!StringUtils.hasText(city)) {
+        if (!StringUtils.hasText(city)) {
             throw new CommandCreateValidationException("city must not be empty");
         }
-        if(!StringUtils.hasText(street)) {
+        if (!StringUtils.hasText(street)) {
             throw new CommandCreateValidationException("street must not be empty");
         }
-        if(!StringUtils.hasText(house)) {
+        if (!StringUtils.hasText(house)) {
             throw new CommandCreateValidationException("house must not be empty");
         }
     }
