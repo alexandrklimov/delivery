@@ -1,14 +1,13 @@
 package microarch.delivery.core.application.query;
 
-import microarch.delivery.core.domain.model.Location;
-
 import java.util.UUID;
 
 /**
  *
  * @param id
  * @param name
- * @param location
+ * @param x
+ * @param y
  */
-public record CourierDTO(UUID id, String name, Location location) {
+public record CourierDTO(UUID id, String name, int x, int y) {
 }

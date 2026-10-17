@@ -25,7 +25,8 @@ public class GetAllCouriersHandlerImpl implements GetAllCouriersHandler {
                     .failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "GetAllCouriersQuery query must not be null!"));
 
         val couriers = courierRepository.getAll().stream()
-                .map(c -> new CourierDTO(c.getId(), c.getName(), c.getLocation())).toList();
+                .map(c -> new CourierDTO(c.getId(), c.getName(), c.getLocation().getX(), c.getLocation().getY()))
+                .toList();
         return Result.success(couriers);
     }
 }

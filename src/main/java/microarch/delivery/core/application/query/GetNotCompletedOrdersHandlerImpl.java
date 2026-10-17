@@ -26,7 +26,7 @@ public class GetNotCompletedOrdersHandlerImpl implements GetNotCompletedOrdersHa
                     Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "GetNotCompletedOrdersQuery query must not be null!"));
 
         val orders = orderRepository.getAllByStatuses(List.of(OrderStatus.Created, OrderStatus.Assigned)).stream()
-                .map(o -> new OrderDTO(o.getId(), o.getLocation())).toList();
+                .map(o -> new OrderDTO(o.getId(), o.getLocation().getX(), o.getLocation().getY())).toList();
         return Result.success(orders);
     }
 }
