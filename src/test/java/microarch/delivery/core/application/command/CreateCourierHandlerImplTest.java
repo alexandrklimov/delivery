@@ -35,7 +35,7 @@ class CreateCourierHandlerImplTest {
 
     @Test
     void testNullCommandFails() {
-        val result = handler.handler(null);
+        val result = handler.handle(null);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError().getCode()).isEqualTo(Constants.ERR_CODE_OBJ_IS_NULL);
@@ -49,7 +49,7 @@ class CreateCourierHandlerImplTest {
         val persisted = Courier.create("Ivan", Location.create(1, 1).getValue()).getValue();
         when(courierRepository.create(any(Courier.class))).thenReturn(persisted);
 
-        val result = handler.handler(new CreateCourierCommand("Ivan"));
+        val result = handler.handle(new CreateCourierCommand("Ivan"));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getName()).isEqualTo("Ivan");

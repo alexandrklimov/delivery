@@ -5,5 +5,5 @@ import libs.errs.Result;
 import microarch.delivery.core.domain.model.courier.Courier;
 
 public interface CreateCourierHandler {
-    Result<Courier, Error> handler(CreateCourierCommand command);
+    Result<Courier, Error> handle(CreateCourierCommand command);
 }

@@ -7,6 +7,7 @@ import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.ports.CourierRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class GetAllCouriersHandlerImpl implements GetAllCouriersHandler {
     private final CourierRepository courierRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Result<List<CourierDTO>, Error> handle(final GetAllCouriersQuery query) {
         if (query == null)
             return Result

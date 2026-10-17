@@ -9,6 +9,7 @@ import microarch.delivery.core.domain.model.order.Order;
 import microarch.delivery.core.ports.CourierRepository;
 import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class CompleteOrderHandlerImpl implements CompleteOrderHandler {
     private final OrderRepository orderRepository;
 
     @Override
+    @Transactional
     public Result<Order, Error> handle(final CompleteOrderCommand command) {
         if (command == null)
             return Result.failure(

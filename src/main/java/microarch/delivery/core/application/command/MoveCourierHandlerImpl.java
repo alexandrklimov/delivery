@@ -9,6 +9,7 @@ import microarch.delivery.core.domain.model.Location;
 import microarch.delivery.core.domain.model.courier.Courier;
 import microarch.delivery.core.ports.CourierRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class MoveCourierHandlerImpl implements MoveCourierHandler {
     private final CourierRepository courierRepository;
 
     @Override
+    @Transactional
     public Result<Courier, Error> handle(final MoveCourierCommand command) {
         if (command == null)
             return Result

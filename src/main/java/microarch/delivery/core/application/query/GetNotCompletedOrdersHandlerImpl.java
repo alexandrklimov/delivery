@@ -8,6 +8,7 @@ import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.order.OrderStatus;
 import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class GetNotCompletedOrdersHandlerImpl implements GetNotCompletedOrdersHa
     private final OrderRepository orderRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Result<List<OrderDTO>, Error> handle(final GetNotCompletedOrdersQuery query) {
         if (query == null)
             return Result.failure(

@@ -54,7 +54,8 @@ class CreateOrderHandlerImplTest {
         val persisted = Order.create(orderId, Location.create(5, 5).getValue(), Volume.create(3).getValue()).getValue();
         when(orderRepository.create(any(Order.class))).thenReturn(persisted);
 
-        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2", 3));
+        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2",
+                Volume.create(3).getValue()));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getId()).isEqualTo(orderId);
@@ -72,7 +73,8 @@ class CreateOrderHandlerImplTest {
         val persisted = Order.create(orderId, Location.create(5, 5).getValue(), Volume.create(1).getValue()).getValue();
         when(orderRepository.create(any(Order.class))).thenReturn(persisted);
 
-        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", null, 1));
+        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", null,
+                Volume.create(1).getValue()));
 
         assertThat(result.isSuccess()).isTrue();
         verify(orderRepository).create(any(Order.class));

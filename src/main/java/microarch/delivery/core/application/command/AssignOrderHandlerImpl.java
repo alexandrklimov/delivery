@@ -10,6 +10,7 @@ import microarch.delivery.core.domain.service.OrderAssignService;
 import microarch.delivery.core.ports.CourierRepository;
 import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class AssignOrderHandlerImpl implements AssignOrderHandler {
     private final OrderAssignService orderAssignService;
 
     @Override
+    @Transactional
     public Result<Courier, Error> handle(final AssignOrderCommand command) {
         if (command == null)
             return Result

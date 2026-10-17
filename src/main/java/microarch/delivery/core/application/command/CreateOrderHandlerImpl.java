@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Location;
-import microarch.delivery.core.domain.model.Volume;
 import microarch.delivery.core.domain.model.order.Order;
 import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Random;
 
@@ -20,6 +20,7 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
     private final OrderRepository orderRepository;
 
     @Override
+    @Transactional
     public Result<Order, Error> handle(CreateOrderCommand command) {
         if (command == null)
             return Result
@@ -30,11 +31,7 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
         if (locRes.isFailure())
             return Result.failure(locRes.getError());
 
-        val volumeRes = Volume.create(command.volume());
-        if (volumeRes.isFailure())
-            return Result.failure(volumeRes.getError());
-
-        val newOrderRes = Order.create(command.orderId(), locRes.getValue(), volumeRes.getValue());
+        val newOrderRes = Order.create(command.orderId(), locRes.getValue(), command.volume());
         if (newOrderRes.isFailure())
             return Result.failure(newOrderRes.getError());
 
