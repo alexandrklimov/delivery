@@ -78,8 +78,8 @@ class GetNotCompletedOrdersHandlerImplTest {
         val result = handler.handle(new GetNotCompletedOrdersQuery());
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue()).containsExactly(new OrderDTO(created.getId(), Location.create(1, 2).getValue()),
-                new OrderDTO(assigned.getId(), Location.create(3, 4).getValue()));
+        assertThat(result.getValue()).containsExactly(new OrderDTO(created.getId(), 1, 2),
+                new OrderDTO(assigned.getId(), 3, 4));
         verify(orderRepository).getAllByStatuses(List.of(OrderStatus.Created, OrderStatus.Assigned));
     }
 }

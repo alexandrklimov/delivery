@@ -62,8 +62,7 @@ class GetAllCouriersHandlerImplTest {
         val result = handler.handle(new GetAllCouriersQuery());
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue()).containsExactly(
-                new CourierDTO(first.getId(), "Ivan", Location.create(1, 2).getValue()),
-                new CourierDTO(second.getId(), "Petr", Location.create(3, 4).getValue()));
+        assertThat(result.getValue()).containsExactly(new CourierDTO(first.getId(), "Ivan", 1, 2),
+                new CourierDTO(second.getId(), "Petr", 3, 4));
     }
 }
