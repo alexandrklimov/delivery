@@ -8,6 +8,7 @@ import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,5 +47,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public List<Order> getAllInAssignedStatus() {
         return orderJpaRepository.findAllByStatus(OrderStatus.Assigned, Sort.by(Sort.Direction.ASC, "id"));
+    }
+
+    @Nonnull
+    @Override
+    public List<Order> getAllByStatuses(@Nonnull final Collection<OrderStatus> statuses) {
+        return orderJpaRepository.findAllByStatusIn(statuses, Sort.by(Sort.Direction.ASC, "id"));
     }
 }

@@ -267,64 +267,54 @@ class CourierTest {
         assertThat(courier.getAssignments()).hasSize(1);
     }
 
-    /* ---------- move ---------- */
+    /* ---------- moveTo ---------- */
 
+    /**
+     * Verifies that the courier can be moved to any valid field location in a single call — the target is reported by
+     * the front end, so there is no step-by-step walking and no one-step restriction.
+     */
     @ParameterizedTest
     @MethodSource
-    void testMove(final int startX, final int startY, final MoveDirection direction, final int expectedX,
-            final int expectedY) {
-        val courier = createCourier(startX, startY);
+    void testMoveToTargetLocation(final int fromX, final int fromY, final int toX, final int toY) {
+        val courier = createCourier(fromX, fromY);
 
-        val result = switch (direction) {
-        case UP -> courier.moveUp();
-        case DOWN -> courier.moveDown();
-        case LEFT -> courier.moveLeft();
-        case RIGHT -> courier.moveRight();
-        };
+        val result = courier.moveTo(Location.create(toX, toY).getValue());
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(courier.getLocation()).isEqualTo(Location.create(expectedX, expectedY).getValue());
+        assertThat(courier.getLocation()).isEqualTo(Location.create(toX, toY).getValue());
     }
 
-    enum MoveDirection {
-        UP, DOWN, LEFT, RIGHT
+    static Stream<Arguments> testMoveToTargetLocation() {
+        // one step in each direction, multi-step, L-path, corner to corner
+        return Stream.of(Arguments.of(5, 5, 6, 5), Arguments.of(5, 5, 4, 5), Arguments.of(5, 5, 5, 6),
+                Arguments.of(5, 5, 5, 4), Arguments.of(5, 5, 8, 5), Arguments.of(2, 2, 6, 9),
+                Arguments.of(1, 1, 10, 10));
     }
 
-    static Stream<Arguments> testMove() {
-        return Stream.of(Arguments.of(5, 5, MoveDirection.UP, 5, 6), Arguments.of(5, 5, MoveDirection.DOWN, 5, 4),
-                Arguments.of(5, 5, MoveDirection.LEFT, 4, 5), Arguments.of(5, 5, MoveDirection.RIGHT, 6, 5));
+    /**
+     * Verifies that moving to the current location succeeds and changes nothing.
+     */
+    @Test
+    void testMoveToCurrentLocationSucceeds() {
+        val courier = createCourier(5, 5);
+
+        val result = courier.moveTo(Location.create(5, 5).getValue());
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(courier.getLocation()).isEqualTo(Location.create(5, 5).getValue());
     }
 
-    @ParameterizedTest
-    @MethodSource
-    void testMoveAtBorderFails(final int startX, final int startY, final MoveDirection direction) {
-        val courier = createCourier(startX, startY);
-        val startLocation = courier.getLocation();
+    /**
+     * Verifies that a null target location is rejected and the courier stays where it was.
+     */
+    @Test
+    void testMoveToNullFails() {
+        val courier = createCourier(5, 5);
 
-        val result = switch (direction) {
-        case UP -> courier.moveUp();
-        case DOWN -> courier.moveDown();
-        case LEFT -> courier.moveLeft();
-        case RIGHT -> courier.moveRight();
-        };
+        val result = courier.moveTo(null);
 
         assertThat(result.isFailure()).isTrue();
-        assertThat(result.getError().getCode()).isEqualTo("value.is.out.of.range");
-        assertThat(courier.getLocation()).isEqualTo(startLocation);
-    }
-
-    static Stream<Arguments> testMoveAtBorderFails() {
-        return Stream.of(Arguments.of(1, 1, MoveDirection.LEFT), Arguments.of(1, 1, MoveDirection.DOWN),
-                Arguments.of(10, 10, MoveDirection.UP), Arguments.of(10, 10, MoveDirection.RIGHT));
-    }
-
-    @Test
-    void testMoveAlongBorderSucceeds() {
-        val courier = createCourier(10, 10);
-
-        val result = courier.moveLeft();
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(courier.getLocation()).isEqualTo(Location.create(9, 10).getValue());
+        assertThat(result.getError().getCode()).isEqualTo(Constants.ERR_CODE_OBJ_IS_NULL);
+        assertThat(courier.getLocation()).isEqualTo(Location.create(5, 5).getValue());
     }
 }

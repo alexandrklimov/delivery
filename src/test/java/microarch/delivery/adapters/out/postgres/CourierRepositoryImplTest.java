@@ -46,7 +46,7 @@ class CourierRepositoryImplTest extends BaseJpaTest {
     @Test
     void update() {
         val courier = courierRepositoryImpl.create(newCourier("courier-update"));
-        courier.moveUp();
+        courier.moveTo(Location.create(1, 2).getValue());
 
         courierRepositoryImpl.update(courier);
         courierJpaRepository.flush();

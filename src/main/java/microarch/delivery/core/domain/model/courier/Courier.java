@@ -142,33 +142,25 @@ public class Courier extends Aggregate<UUID> {
         return completeResult.map(x -> this);
     }
 
-    public Result<Courier, Error> moveUp() {
-        val newLocationRes = Location.create(location.getX(), location.getY() + STEP_SIZE);
-        return setNewLocation(newLocationRes);
+    /**
+     * Moves the courier to the target location reported from the front end (the courier moves on its own, the backend
+     * only records the reported coordinates).
+     *
+     * <p>
+     * Any in-bounds location is accepted in a single call — there is no one-step restriction, and field bounds are
+     * guaranteed by the {@link Location} value object itself (see {@code Location.create}), so no extra validation is
+     * needed here.
+     *
+     * @param target
+     *            must not be null
+     *
+     * @return if success - a Result contains this Courier placed at the target; otherwise - a Result contains an Error
+     */
+    public Result<Courier, Error> moveTo(final Location target) {
+        if (target == null)
+            return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "target location must not be null"));
 
-    }
-
-    public Result<Courier, Error> moveDown() {
-        val newLocationRes = Location.create(location.getX(), location.getY() - STEP_SIZE);
-        return setNewLocation(newLocationRes);
-    }
-
-    public Result<Courier, Error> moveLeft() {
-        val newLocationRes = Location.create(location.getX() - STEP_SIZE, location.getY());
-        return setNewLocation(newLocationRes);
-    }
-
-    public Result<Courier, Error> moveRight() {
-        val newLocationRes = Location.create(location.getX() + STEP_SIZE, location.getY());
-        return setNewLocation(newLocationRes);
-    }
-
-    private Result<Courier, Error> setNewLocation(Result<Location, Error> newLocationRes) {
-        if (newLocationRes.isSuccess()) {
-            this.location = newLocationRes.getValue();
-            return Result.success(this);
-        } else {
-            return Result.failure(newLocationRes.getError());
-        }
+        this.location = target;
+        return Result.success(this);
     }
 }
