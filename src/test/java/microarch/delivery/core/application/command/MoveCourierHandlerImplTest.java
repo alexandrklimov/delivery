@@ -64,11 +64,15 @@ class MoveCourierHandlerImplTest {
         verify(courierRepository, never()).update(any(Courier.class));
     }
 
-    /* ---------- one step moves ---------- */
+    /* ---------- moves ---------- */
 
+    /**
+     * Verifies that the handler persists the courier at whatever valid location the command carries — one-step and
+     * multi-step targets are treated the same way.
+     */
     @ParameterizedTest
     @MethodSource
-    void testOneStepMoveApplied(final int fromX, final int fromY, final int toX, final int toY) {
+    void testMoveApplied(final int fromX, final int fromY, final int toX, final int toY) {
         val courier = courierAt(fromX, fromY);
         when(courierRepository.findById(courier.getId())).thenReturn(Optional.of(courier));
         when(courierRepository.update(any(Courier.class))).thenReturn(courier);
@@ -80,31 +84,10 @@ class MoveCourierHandlerImplTest {
         verify(courierRepository).update(courier);
     }
 
-    static Stream<Arguments> testOneStepMoveApplied() {
-        // right, left, up, down
+    static Stream<Arguments> testMoveApplied() {
+        // one step in each direction, two steps horizontally, two steps vertically, L-path, corner to corner
         return Stream.of(Arguments.of(5, 5, 6, 5), Arguments.of(5, 5, 4, 5), Arguments.of(5, 5, 5, 6),
-                Arguments.of(5, 5, 5, 4));
-    }
-
-    /* ---------- multi step moves ---------- */
-
-    @ParameterizedTest
-    @MethodSource
-    void testMultiStepMoveApplied(final int fromX, final int fromY, final int toX, final int toY) {
-        val courier = courierAt(fromX, fromY);
-        when(courierRepository.findById(courier.getId())).thenReturn(Optional.of(courier));
-        when(courierRepository.update(any(Courier.class))).thenReturn(courier);
-
-        val result = handler.handle(new MoveCourierCommand(courier.getId(), Location.create(toX, toY).getValue()));
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().getLocation()).isEqualTo(Location.create(toX, toY).getValue());
-        verify(courierRepository).update(courier);
-    }
-
-    static Stream<Arguments> testMultiStepMoveApplied() {
-        // two steps horizontally, two steps vertically, L-path, corner to corner across the whole field
-        return Stream.of(Arguments.of(5, 5, 8, 5), Arguments.of(5, 5, 5, 2), Arguments.of(2, 2, 6, 9),
+                Arguments.of(5, 5, 5, 4), Arguments.of(5, 5, 8, 5), Arguments.of(5, 5, 5, 2), Arguments.of(2, 2, 6, 9),
                 Arguments.of(1, 1, 10, 10));
     }
 
