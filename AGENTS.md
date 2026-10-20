@@ -11,7 +11,7 @@
 ---
 
 ## System Purpose
-Educational microservice for a courier-delivery domain — the reference project of the "Domain Driven Design and Clean Architecture in Java" course (microarch.ru). It manages orders and couriers, dispatches each new order to the most suitable courier, moves couriers step-by-step across a bounded grid field, and completes orders when a courier reaches the delivery point. The application layer is exposed as commands and queries (CQRS-style) over ports & adapters; domain models never leave the Use Case layer. Inbound HTTP/gRPC/Kafka adapters are planned for later course modules — currently the codebase covers the domain, the application layer, and Postgres output adapters.
+Educational microservice for a courier-delivery domain — the reference project of the "Domain Driven Design and Clean Architecture in Java" course (microarch.ru). It manages orders and couriers, dispatches each new order to the most suitable courier, moves couriers step-by-step across a bounded grid field, and completes orders when a courier reaches the delivery point. The application layer is exposed as commands and queries (CQRS-style) over ports & adapters; domain models never leave the Use Case layer. The codebase covers the domain, the application layer, an inbound HTTP adapter (REST) with a periodic assign-order job, and Postgres output adapters; gRPC/Kafka inbound adapters are planned for later course modules.
 
 ## Tech Stack & Profile
 - **Profile:** SPRING_BOOT
@@ -55,9 +55,11 @@ Educational microservice for a courier-delivery domain — the reference project
   - `microarch.delivery.core.application.command` — commands + command handlers: `CreateCourier`, `CreateOrder`, `MoveCourier`, `AssignOrder`, `CompleteOrder` (each: `*Command` record with constructor validation → `*Handler` interface → `*HandlerImpl` with `@Transactional`)
   - `microarch.delivery.core.application.query` — queries + read-model DTOs: `GetAllCouriers`, `GetNotCompletedOrders` (`CourierDTO`, `OrderDTO` expose plain `x`/`y` coordinates — domain types never leak to adapters)
   - `microarch.delivery.core.ports` — output ports (`OrderRepository`, `CourierRepository`)
+  - `microarch.delivery.adapters.in.http` — inbound REST adapter: `OrderController`, `CourierController` implement the OpenAPI-generated `*Api` interfaces and delegate to command/query handlers; `ApiException` carries the HTTP status mapped from a domain `Result` error
+  - `microarch.delivery.adapters.in.jobs` — periodic jobs: `AssignOrderJob` triggers the Assign Order use case every second (`@Scheduled(fixedRate = 1000)`)
   - `microarch.delivery.adapters.out.postgres` — JPA adapters (`*JpaRepository` Spring Data interfaces + `*RepositoryImpl`)
-  - `microarch.delivery` (root) — `DeliveryApplication`, `GlobalExceptionHandler` (`@RestControllerAdvice`), `ApplicationProperties`, `Constants`; `microarch.delivery.config` — `JacksonConfig`
-- **HTTP/REST Convention:** no hand-written controllers yet (only OpenAPI-generated interfaces from `openapi-generator-maven-plugin` and a `@RestControllerAdvice`) — convention TBD; establish one when the first inbound HTTP adapter is written.
+  - `microarch.delivery` (root) — `DeliveryApplication`, `GlobalExceptionHandler` (`@RestControllerAdvice`), `ApplicationProperties`, `Constants`; `microarch.delivery.config` — `JacksonConfig`, `WebConfig` (CORS)
+- **HTTP/REST Convention:** controllers live in `microarch.delivery.adapters.in.http`, are named `*Controller`, implement the OpenAPI-generated `*Api` interfaces (one method per use case), and delegate to `*Handler`s. `Result` failures are translated by `ApiException` and rendered by `GlobalExceptionHandler` as the contract `Error` body (`code` = HTTP status): input validation → 400, business/state conflicts → 409, the rest → 500.
 
 ---
 
