@@ -32,8 +32,8 @@ public class CompleteOrderHandlerImpl implements CompleteOrderHandler {
 
         val orderOpt = orderRepository.findById(command.orderId());
         if (orderOpt.isEmpty())
-            return Result
-                    .failure(Error.of("order.not.found", "Order with id=%s not found".formatted(command.orderId())));
+            return Result.failure(Error.of(Constants.ERR_CODE_ORDER_NOT_FOUND,
+                    "Order with id=%s not found".formatted(command.orderId())));
 
         val courier = courierOpt.get();
         val order = orderOpt.get();

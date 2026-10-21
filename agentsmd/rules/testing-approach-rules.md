@@ -331,4 +331,4 @@ No on-disk fixture convention (`src/test/resources` does not exist); inputs are 
 
 ### GAPs [CRITICAL]
 
-- **Web-slice layer GAP:** no `@WebMvcTest` (or equivalent) test classes exist — the project has no hand-written controllers yet (only OpenAPI-generated interfaces and a `@RestControllerAdvice`). When the first inbound HTTP adapter appears, create a web-slice test class (e.g., `*ControllerTest`) or ask the user how to proceed.
+- **Web-slice layer GAP:** no `@WebMvcTest` (or equivalent) test classes exist, although inbound HTTP controllers (`OrderController`, `CourierController`) are implemented. Create a web-slice test class (e.g., `*ControllerTest`) or ask the user how to proceed.

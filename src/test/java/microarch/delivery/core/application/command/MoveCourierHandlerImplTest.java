@@ -20,9 +20,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MoveCourierHandlerImplTest {
@@ -52,12 +50,25 @@ class MoveCourierHandlerImplTest {
         verify(courierRepository, never()).update(any(Courier.class));
     }
 
+    /**
+     * Verifies that out-of-range coordinates are rejected by the handler via {@code Location#create} — the command
+     * carries primitives, so the field-bound check lives in the use case.
+     */
+    @Test
+    void testOutOfRangeLocationFails() {
+        val result = handler.handle(new MoveCourierCommand(UUID.randomUUID(), 0, 5));
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError().getCode()).isEqualTo("value.is.out.of.range");
+        verifyNoInteractions(courierRepository);
+    }
+
     @Test
     void testCourierNotFoundFails() {
         val courierId = UUID.randomUUID();
         when(courierRepository.findById(courierId)).thenReturn(Optional.empty());
 
-        val result = handler.handle(new MoveCourierCommand(courierId, Location.create(5, 5).getValue()));
+        val result = handler.handle(new MoveCourierCommand(courierId, 5, 5));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError().getCode()).isEqualTo("courier.not.found");
@@ -77,7 +88,7 @@ class MoveCourierHandlerImplTest {
         when(courierRepository.findById(courier.getId())).thenReturn(Optional.of(courier));
         when(courierRepository.update(any(Courier.class))).thenReturn(courier);
 
-        val result = handler.handle(new MoveCourierCommand(courier.getId(), Location.create(toX, toY).getValue()));
+        val result = handler.handle(new MoveCourierCommand(courier.getId(), toX, toY));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getLocation()).isEqualTo(Location.create(toX, toY).getValue());
@@ -99,7 +110,7 @@ class MoveCourierHandlerImplTest {
         when(courierRepository.findById(courier.getId())).thenReturn(Optional.of(courier));
         when(courierRepository.update(any(Courier.class))).thenReturn(courier);
 
-        val result = handler.handle(new MoveCourierCommand(courier.getId(), Location.create(5, 5).getValue()));
+        val result = handler.handle(new MoveCourierCommand(courier.getId(), 5, 5));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getLocation()).isEqualTo(Location.create(5, 5).getValue());

@@ -18,9 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateOrderHandlerImplTest {
@@ -46,6 +44,22 @@ class CreateOrderHandlerImplTest {
         verifyNoInteractions(orderRepository);
     }
 
+    /* ---------- value-object validation (owned by the handler) ---------- */
+
+    /**
+     * Verifies that a non-positive volume is rejected by the handler via {@code Volume#create} — the command carries a
+     * primitive, so the boundary check lives in the use case.
+     */
+    @Test
+    void testNonPositiveVolumeFails() {
+        val result = handler
+                .handle(new CreateOrderCommand(UUID.randomUUID(), "Russia", "Moscow", "Tverskaya", "1", "2", 0));
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError().getCode()).isEqualTo("value.must.be.greater.or.equal");
+        verifyNoInteractions(orderRepository);
+    }
+
     /* ---------- happy path ---------- */
 
     @Test
@@ -54,8 +68,7 @@ class CreateOrderHandlerImplTest {
         val persisted = Order.create(orderId, Location.create(5, 5).getValue(), Volume.create(3).getValue()).getValue();
         when(orderRepository.create(any(Order.class))).thenReturn(persisted);
 
-        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2",
-                Volume.create(3).getValue()));
+        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2", 3));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().getId()).isEqualTo(orderId);
@@ -73,8 +86,7 @@ class CreateOrderHandlerImplTest {
         val persisted = Order.create(orderId, Location.create(5, 5).getValue(), Volume.create(1).getValue()).getValue();
         when(orderRepository.create(any(Order.class))).thenReturn(persisted);
 
-        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", null,
-                Volume.create(1).getValue()));
+        val result = handler.handle(new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", null, 1));
 
         assertThat(result.isSuccess()).isTrue();
         verify(orderRepository).create(any(Order.class));

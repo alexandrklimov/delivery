@@ -1,7 +1,6 @@
 package microarch.delivery.core.application.command;
 
 import lombok.val;
-import microarch.delivery.core.domain.model.Location;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,24 +12,18 @@ class MoveCourierCommandTest {
 
     @Test
     void testNullCourierIdRejected() {
-        assertThatThrownBy(() -> new MoveCourierCommand(null, Location.create(5, 5).getValueOrThrow()))
-                .isInstanceOf(CommandCreateValidationException.class);
-    }
-
-    @Test
-    void testNullLocationRejected() {
-        assertThatThrownBy(() -> new MoveCourierCommand(UUID.randomUUID(), null))
+        assertThatThrownBy(() -> new MoveCourierCommand(null, 5, 5))
                 .isInstanceOf(CommandCreateValidationException.class);
     }
 
     @Test
     void testValidCommandAccepted() {
         val courierId = UUID.randomUUID();
-        val location = Location.create(5, 5).getValueOrThrow();
 
-        val command = new MoveCourierCommand(courierId, location);
+        val command = new MoveCourierCommand(courierId, 5, 5);
 
         assertThat(command.courierId()).isEqualTo(courierId);
-        assertThat(command.location()).isEqualTo(location);
+        assertThat(command.x()).isEqualTo(5);
+        assertThat(command.y()).isEqualTo(5);
     }
 }
