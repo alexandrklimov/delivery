@@ -13,7 +13,6 @@ import microarch.delivery.core.application.command.*;
 import microarch.delivery.core.application.query.GetNotCompletedOrdersHandler;
 import microarch.delivery.core.application.query.GetNotCompletedOrdersQuery;
 import microarch.delivery.core.application.query.OrderDTO;
-import microarch.delivery.core.domain.model.Volume;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -87,13 +86,13 @@ public class OrderController implements CreateOrderApi, GetOrdersApi, CompleteOr
     }
 
     /**
-     * Converts the HTTP payload into a {@link CreateOrderCommand}, validating the parts the command constructor cannot
-     * check by itself (null address, null volume, volume value).
+     * Converts the HTTP payload into a {@link CreateOrderCommand}, guarding only against input-shape problems (missing
+     * address or volume) — business value validation belongs to the use case handler.
      *
      * @param newOrder
      *            incoming payload
      *
-     * @return the validated command
+     * @return the command carrying primitive input values
      */
     private CreateOrderCommand toCommand(final NewOrder newOrder) {
         val address = newOrder.getAddress();
@@ -102,12 +101,8 @@ public class OrderController implements CreateOrderApi, GetOrdersApi, CompleteOr
         if (newOrder.getVolume() == null)
             throw new CommandCreateValidationException("volume must not be null");
 
-        val volumeRes = Volume.create(newOrder.getVolume());
-        if (volumeRes.isFailure())
-            throw new CommandCreateValidationException(volumeRes.getError().getMessage());
-
         return new CreateOrderCommand(newOrder.getId(), address.getCountry(), address.getCity(), address.getStreet(),
-                address.getHouse(), address.getApartment(), volumeRes.getValue());
+                address.getHouse(), address.getApartment(), newOrder.getVolume());
     }
 
     /**

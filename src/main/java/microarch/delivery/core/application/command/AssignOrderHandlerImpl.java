@@ -29,7 +29,8 @@ public class AssignOrderHandlerImpl implements AssignOrderHandler {
 
         val orderOpt = orderRepository.getAnyInCreatedStatus();
         if (orderOpt.isEmpty())
-            return Result.failure(Error.of("order.not.found", "There is no any order in Created status to assign"));
+            return Result.failure(
+                    Error.of(Constants.ERR_CODE_ORDER_NOT_FOUND, "There is no any order in Created status to assign"));
 
         val order = orderOpt.get();
         val couriers = courierRepository.getAll();

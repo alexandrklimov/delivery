@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class ApiException extends RuntimeException {
 
-    private static final Set<String> CONFLICT_CODES = Set.of("courier.not.found", "order.not.found",
+    private static final Set<String> CONFLICT_CODES = Set.of("courier.not.found", Constants.ERR_CODE_ORDER_NOT_FOUND,
             "courier.order.not.found", "courier.out.of.completion.zone", "out.of.completion.zone",
             "order.transition.not.allowed", "courier.already.has.order", "courier.maxvol.restriction",
             "courier.name.is.blank");

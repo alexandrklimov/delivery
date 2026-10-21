@@ -1,7 +1,6 @@
 package microarch.delivery.core.application.command;
 
 import lombok.val;
-import microarch.delivery.core.domain.model.Volume;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,7 +12,7 @@ class CreateOrderCommandTest {
 
     private static CreateOrderCommand command(final UUID orderId, final String country, final String city,
             final String street, final String house, final String apartment) {
-        return new CreateOrderCommand(orderId, country, city, street, house, apartment, Volume.create(3).getValue());
+        return new CreateOrderCommand(orderId, country, city, street, house, apartment, 3);
     }
 
     @Test
@@ -54,20 +53,12 @@ class CreateOrderCommandTest {
     }
 
     @Test
-    void testNullVolumeRejected() {
-        assertThatThrownBy(
-                () -> new CreateOrderCommand(UUID.randomUUID(), "Russia", "Moscow", "Tverskaya", "1", "2", null))
-                        .isInstanceOf(CommandCreateValidationException.class);
-    }
-
-    @Test
     void testValidCommandAccepted() {
         val orderId = UUID.randomUUID();
-        val volume = Volume.create(3).getValue();
-        val command = new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2", volume);
+        val command = new CreateOrderCommand(orderId, "Russia", "Moscow", "Tverskaya", "1", "2", 3);
 
         assertThat(command.orderId()).isEqualTo(orderId);
         assertThat(command.country()).isEqualTo("Russia");
-        assertThat(command.volume()).isEqualTo(volume);
+        assertThat(command.volume()).isEqualTo(3);
     }
 }

@@ -1,6 +1,5 @@
 package microarch.delivery.core.application.command;
 
-import microarch.delivery.core.domain.model.Volume;
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
@@ -15,10 +14,11 @@ import java.util.UUID;
  * @param apartment
  *            may be NULL or blank
  * @param volume
- *            must not be null; create via {@link Volume#create(int)} — the value object validates the value itself
+ *            must be a positive number; the {@code Volume} value object is created and validated by the use case
+ *            handler, so a non-positive value is reported as a use case failure, not a command rejection
  */
 public record CreateOrderCommand(UUID orderId, String country, String city, String street, String house,
-        String apartment, Volume volume) {
+        String apartment, int volume) {
     public CreateOrderCommand {
         if (orderId == null) {
             throw new CommandCreateValidationException("orderId is must not be null");
@@ -34,9 +34,6 @@ public record CreateOrderCommand(UUID orderId, String country, String city, Stri
         }
         if (!StringUtils.hasText(house)) {
             throw new CommandCreateValidationException("house must not be empty");
-        }
-        if (volume == null) {
-            throw new CommandCreateValidationException("volume is must not be null");
         }
     }
 }

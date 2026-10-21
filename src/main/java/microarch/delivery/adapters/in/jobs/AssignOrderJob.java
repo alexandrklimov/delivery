@@ -3,6 +3,7 @@ package microarch.delivery.adapters.in.jobs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import microarch.delivery.Constants;
 import microarch.delivery.core.application.command.AssignOrderCommand;
 import microarch.delivery.core.application.command.AssignOrderHandler;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,14 +18,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AssignOrderJob {
 
-    private static final String ERR_CODE_ORDER_NOT_FOUND = "order.not.found";
-
     private final AssignOrderHandler assignOrderHandler;
 
     /**
      * Runs every second and delegates to {@link AssignOrderHandler}.
      * <p>
-     * Absence of assignable orders is an expected outcome logged at DEBUG; any other failure is logged at WARN.
+     * Absence of assignable orders (the shared {@link Constants#ERR_CODE_ORDER_NOT_FOUND} error code) is an expected
+     * outcome logged at DEBUG; any other failure is logged at WARN.
      */
     @Scheduled(fixedRate = 1000)
     public void assignOrder() {
@@ -33,7 +33,7 @@ public class AssignOrderJob {
             log.info("Order has been assigned to courier id={}", result.getValue().getId());
             return;
         }
-        if (ERR_CODE_ORDER_NOT_FOUND.equals(result.getError().getCode())) {
+        if (Constants.ERR_CODE_ORDER_NOT_FOUND.equals(result.getError().getCode())) {
             log.debug("No order to assign: {}", result.getError().serialize());
             return;
         }

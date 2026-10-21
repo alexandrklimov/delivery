@@ -5,6 +5,7 @@ import libs.errs.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
+import microarch.delivery.core.domain.model.Location;
 import microarch.delivery.core.domain.model.courier.Courier;
 import microarch.delivery.core.ports.CourierRepository;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,17 @@ public class MoveCourierHandlerImpl implements MoveCourierHandler {
             return Result
                     .failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "MoveCourierCommand command must not be null!"));
 
+        val locationRes = Location.create(command.x(), command.y());
+        if (locationRes.isFailure())
+            return Result.failure(locationRes.getError());
+
         val courierOpt = courierRepository.findById(command.courierId());
         if (courierOpt.isEmpty())
             return Result.failure(
                     Error.of("courier.not.found", "Courier with id=%s not found".formatted(command.courierId())));
 
         val courier = courierOpt.get();
-        val moveRes = courier.moveTo(command.location());
+        val moveRes = courier.moveTo(locationRes.getValue());
         if (moveRes.isFailure())
             return Result.failure(moveRes.getError());
 

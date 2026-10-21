@@ -82,12 +82,7 @@ public class CourierController implements CreateCourierApi, GetCouriersApi, Move
         if (location.getX() == null || location.getY() == null)
             throw new CommandCreateValidationException("x and y must not be null");
 
-        // Fully qualified: name clash with the generated HTTP model Location imported above.
-        val locationRes = microarch.delivery.core.domain.model.Location.create(location.getX(), location.getY());
-        if (locationRes.isFailure())
-            throw new CommandCreateValidationException(locationRes.getError().getMessage());
-
-        val result = moveCourierHandler.handle(new MoveCourierCommand(courierId, locationRes.getValue()));
+        val result = moveCourierHandler.handle(new MoveCourierCommand(courierId, location.getX(), location.getY()));
         if (result.isFailure())
             throw ApiException.of(result.getError());
 
