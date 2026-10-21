@@ -5,20 +5,23 @@ import libs.errs.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
-import microarch.delivery.core.domain.model.Location;
 import microarch.delivery.core.domain.model.Volume;
 import microarch.delivery.core.domain.model.order.Order;
+import microarch.delivery.core.ports.GeoService;
 import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Random;
-
+/**
+ * Use case "Create Order": resolves the delivery address into a {@code Location} via the Geo service port and persists
+ * a new {@link Order} in the {@code Created} status.
+ */
 @Service
 @RequiredArgsConstructor
 public class CreateOrderHandlerImpl implements CreateOrderHandler {
 
     private final OrderRepository orderRepository;
+    private final GeoService geoService;
 
     @Override
     @Transactional
@@ -27,8 +30,7 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
             return Result
                     .failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "CreateOrderCommand command must not be null!"));
 
-        val locRes = resolveLocation(command.country(), command.city(), command.street(), command.house(),
-                command.apartment());
+        val locRes = geoService.getLocation(command.street());
         if (locRes.isFailure())
             return Result.failure(locRes.getError());
 
@@ -41,22 +43,5 @@ public class CreateOrderHandlerImpl implements CreateOrderHandler {
             return Result.failure(newOrderRes.getError());
 
         return Result.success(orderRepository.create(newOrderRes.getValueOrThrow()));
-    }
-
-    /**
-     * Location is random temporary
-     *
-     * @param country
-     * @param city
-     * @param street
-     * @param house
-     * @param apartment
-     *
-     * @return
-     */
-    private Result<Location, Error> resolveLocation(final String country, final String city, final String street,
-            final String house, final String apartment) {
-        val rnd = new Random();
-        return Location.create(rnd.nextInt(1, 11), rnd.nextInt(1, 11));
     }
 }
