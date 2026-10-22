@@ -1,5 +1,6 @@
 package microarch.delivery.core.application.command;
 
+import libs.ddd.DomainEventPublisher;
 import libs.errs.Error;
 import libs.errs.Result;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +12,19 @@ import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+/**
+ * Use case "Complete Order": completes the courier's assignment, moves the order into the {@code Completed} status,
+ * persists both aggregates, and publishes the order domain events.
+ */
 @Service
 @RequiredArgsConstructor
 public class CompleteOrderHandlerImpl implements CompleteOrderHandler {
 
     private final CourierRepository courierRepository;
     private final OrderRepository orderRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
     @Override
     @Transactional
@@ -47,6 +55,8 @@ public class CompleteOrderHandlerImpl implements CompleteOrderHandler {
             return Result.failure(markRes.getError());
 
         courierRepository.update(completeRes.getValue());
-        return Result.success(orderRepository.update(markRes.getValue()));
+        val completedOrder = orderRepository.update(markRes.getValue());
+        domainEventPublisher.publish(List.of(order));
+        return Result.success(completedOrder);
     }
 }

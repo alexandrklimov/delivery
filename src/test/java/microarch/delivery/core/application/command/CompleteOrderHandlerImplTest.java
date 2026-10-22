@@ -1,5 +1,6 @@
 package microarch.delivery.core.application.command;
 
+import libs.ddd.DomainEventPublisher;
 import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Location;
@@ -15,15 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CompleteOrderHandlerImplTest {
@@ -34,11 +33,14 @@ class CompleteOrderHandlerImplTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
+
     private CompleteOrderHandlerImpl handler;
 
     @BeforeEach
     void setUp() {
-        handler = new CompleteOrderHandlerImpl(courierRepository, orderRepository);
+        handler = new CompleteOrderHandlerImpl(courierRepository, orderRepository, domainEventPublisher);
     }
 
     private static Courier newCourier(final int x, final int y) {
@@ -62,6 +64,7 @@ class CompleteOrderHandlerImplTest {
         assertThat(result.getError().getCode()).isEqualTo(Constants.ERR_CODE_OBJ_IS_NULL);
         verifyNoInteractions(courierRepository);
         verifyNoInteractions(orderRepository);
+        verifyNoInteractions(domainEventPublisher);
     }
 
     /* ---------- not found guards ---------- */
@@ -148,5 +151,6 @@ class CompleteOrderHandlerImplTest {
         assertThat(courier.getAssignments()).isEmpty();
         verify(courierRepository).update(courier);
         verify(orderRepository).update(order);
+        verify(domainEventPublisher).publish(List.of(order));
     }
 }
