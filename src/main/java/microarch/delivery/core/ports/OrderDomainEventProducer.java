@@ -12,14 +12,16 @@ public interface OrderDomainEventProducer {
     /**
      * Publishes the "order assigned" domain event to the external transport.
      *
-     * @param event the domain event to publish
+     * @param event
+     *            the domain event to publish
      */
     void produce(final OrderAssignedDomainEvent event);
 
     /**
      * Publishes the "order completed" domain event to the external transport.
      *
-     * @param event the domain event to publish
+     * @param event
+     *            the domain event to publish
      */
     void produce(final OrderCompletedDomainEvent event);
 }

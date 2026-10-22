@@ -1,20 +1,35 @@
 package microarch.delivery.core.domain.model;
 
+import jakarta.persistence.*;
 import libs.ddd.BaseEntity;
 import libs.errs.Error;
 import libs.errs.Guard;
 import libs.errs.Result;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.val;
 import microarch.delivery.Constants;
 
 import java.util.UUID;
 
+/**
+ * Entity inside the {@code Courier} aggregate: an order assigned to the courier, carrying the order volume, the
+ * delivery target location, and the assignment status through its lifecycle.
+ */
+@Entity
+@Table(name = "assignment")
 @Getter
+@NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
 public class Assignment extends BaseEntity<UUID> {
+    @Column(name = "order_id")
     private final UUID orderId;
+    @Embedded
     private final Volume volume;
+    @Embedded
     private final Location location;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private Assignment(final UUID orderId, final Volume volume, final Location location, final Status status) {

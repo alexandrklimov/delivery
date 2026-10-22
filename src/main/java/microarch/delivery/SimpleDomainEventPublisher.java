@@ -25,18 +25,21 @@ public class SimpleDomainEventPublisher implements DomainEventPublisher {
      * Routes every accumulated domain event of each aggregate to its aggregate-dedicated producer port and then clears
      * the aggregates' event lists.
      *
-     * @param aggregates aggregates whose accumulated domain events should be published
-     * @throws IllegalArgumentException when an event of an unsupported aggregate is encountered
+     * @param aggregates
+     *            aggregates whose accumulated domain events should be published
+     *
+     * @throws IllegalArgumentException
+     *             when an event of an unsupported aggregate is encountered
      */
     @Override
     public void publish(final Iterable<? extends Aggregate<?>> aggregates) {
         for (val aggregate : aggregates) {
             for (val event : aggregate.getDomainEvents()) {
                 switch (event) {
-                    case OrderAssignedDomainEvent e -> orderDomainEventProducer.produce(e);
-                    case OrderCompletedDomainEvent e -> orderDomainEventProducer.produce(e);
-                    default -> throw new IllegalArgumentException(
-                            "Unsupported domain event: " + event.getClass().getName());
+                case OrderAssignedDomainEvent e -> orderDomainEventProducer.produce(e);
+                case OrderCompletedDomainEvent e -> orderDomainEventProducer.produce(e);
+                default -> throw new IllegalArgumentException(
+                        "Unsupported domain event: " + event.getClass().getName());
                 }
             }
             aggregate.clearDomainEvents();

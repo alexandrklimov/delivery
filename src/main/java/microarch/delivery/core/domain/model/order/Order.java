@@ -54,7 +54,7 @@ public class Order extends Aggregate<UUID> {
      * {@link OrderAssignedDomainEvent}.
      *
      * @return if requested transition is allowed, successful result contains modified Order <i>(this obj.)</i>;
-     * otherwise - result contains err description
+     *         otherwise - result contains err description
      */
     public Result<Order, Error> markAsAssigned() {
         val result = transition(OrderStatus.Created, OrderStatus.Assigned);
@@ -68,7 +68,7 @@ public class Order extends Aggregate<UUID> {
      * {@link OrderCompletedDomainEvent}.
      *
      * @return if requested transition is allowed, successful result contains modified Order <i>(this obj.)</i>;
-     * otherwise - result contains err description
+     *         otherwise - result contains err description
      */
     public Result<Order, Error> markAsCompleted() {
         val result = transition(OrderStatus.Assigned, OrderStatus.Completed);

@@ -18,7 +18,8 @@ public final class OrderCompletedDomainEvent extends DomainEvent {
     /**
      * Captures the fact for the given aggregate state.
      *
-     * @param order the order that has just been completed
+     * @param order
+     *            the order that has just been completed
      */
     public OrderCompletedDomainEvent(final Order order) {
         super(order);

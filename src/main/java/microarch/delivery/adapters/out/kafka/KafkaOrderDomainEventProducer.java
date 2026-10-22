@@ -31,7 +31,8 @@ public class KafkaOrderDomainEventProducer implements OrderDomainEventProducer {
     /**
      * Publishes the "order assigned" integration event to Kafka.
      *
-     * @param event the domain event to publish
+     * @param event
+     *            the domain event to publish
      */
     @Override
     public void produce(final OrderAssignedDomainEvent event) {
@@ -43,7 +44,8 @@ public class KafkaOrderDomainEventProducer implements OrderDomainEventProducer {
     /**
      * Publishes the "order completed" integration event to Kafka.
      *
-     * @param event the domain event to publish
+     * @param event
+     *            the domain event to publish
      */
     @Override
     public void produce(final OrderCompletedDomainEvent event) {
@@ -55,8 +57,10 @@ public class KafkaOrderDomainEventProducer implements OrderDomainEventProducer {
     /**
      * Synchronously sends the serialized integration event keyed by the order id to preserve per-order ordering.
      *
-     * @param orderId order id used as the message key
-     * @param payload serialized integration event bytes
+     * @param orderId
+     *            order id used as the message key
+     * @param payload
+     *            serialized integration event bytes
      */
     private void send(final UUID orderId, final byte[] payload) {
         try {
