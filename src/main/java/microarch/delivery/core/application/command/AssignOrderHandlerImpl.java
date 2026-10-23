@@ -1,5 +1,6 @@
 package microarch.delivery.core.application.command;
 
+import libs.ddd.DomainEventPublisher;
 import libs.errs.Error;
 import libs.errs.Result;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,12 @@ import microarch.delivery.core.ports.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+/**
+ * Use case "Assign Order": dispatches the next order in the {@code Created} status to the best-suited courier, persists
+ * both aggregates, and publishes the order domain events.
+ */
 @Service
 @RequiredArgsConstructor
 public class AssignOrderHandlerImpl implements AssignOrderHandler {
@@ -19,6 +26,7 @@ public class AssignOrderHandlerImpl implements AssignOrderHandler {
     private final OrderRepository orderRepository;
     private final CourierRepository courierRepository;
     private final OrderAssignService orderAssignService;
+    private final DomainEventPublisher domainEventPublisher;
 
     @Override
     @Transactional
@@ -40,6 +48,8 @@ public class AssignOrderHandlerImpl implements AssignOrderHandler {
             return Result.failure(assignRes.getError());
 
         orderRepository.update(order);
-        return Result.success(courierRepository.update(assignRes.getValue()));
+        val courier = courierRepository.update(assignRes.getValue());
+        domainEventPublisher.publish(List.of(order));
+        return Result.success(courier);
     }
 }

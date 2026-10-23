@@ -2,7 +2,9 @@ package microarch.delivery.adapters.out.postgres;
 
 import lombok.val;
 import microarch.delivery.core.domain.model.Location;
+import microarch.delivery.core.domain.model.Volume;
 import microarch.delivery.core.domain.model.courier.Courier;
+import microarch.delivery.core.domain.model.order.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -81,5 +83,35 @@ class CourierRepositoryImplTest extends BaseJpaTest {
         val all = courierRepositoryImpl.getAll();
 
         assertThat(all).extracting(Courier::getId).containsExactlyElementsOf(sortedIds);
+    }
+
+    /**
+     * Verifies that assignments survive a persistence round-trip: a reloaded courier instance sees the assignments
+     * created by another instance, and completing an assignment removes it for the next reload.
+     */
+    @Test
+    void assignmentsPersistAcrossInstances() {
+        val courier = courierRepositoryImpl.create(newCourier("courier-assignments"));
+        val order = Order.create(UUID.randomUUID(), Location.create(2, 1).getValue(), Volume.create(3).getValue())
+                .getValue();
+        courier.assignOrder(order);
+        courierRepositoryImpl.update(courier);
+        courierJpaRepository.flush();
+        testEntityManager.clear();
+
+        val reloaded = courierRepositoryImpl.findById(courier.getId()).orElseThrow();
+        assertThat(reloaded.getAssignments()).hasSize(1);
+        assertThat(reloaded.getAssignments().iterator().next().getOrderId()).isEqualTo(order.getId());
+        assertThat(reloaded.checkCanAssignOneMore(Volume.create(3).getValue()).isSuccess()).isTrue();
+        assertThat(reloaded.checkCanAssignOneMore(Volume.create(20).getValue()).isFailure()).isTrue();
+
+        val completeRes = reloaded.completeAssignment(order.getId());
+        assertThat(completeRes.isSuccess()).isTrue();
+        courierRepositoryImpl.update(reloaded);
+        courierJpaRepository.flush();
+        testEntityManager.clear();
+
+        val afterComplete = courierRepositoryImpl.findById(courier.getId()).orElseThrow();
+        assertThat(afterComplete.getAssignments()).isEmpty();
     }
 }

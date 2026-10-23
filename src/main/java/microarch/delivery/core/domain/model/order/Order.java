@@ -1,10 +1,6 @@
 package microarch.delivery.core.domain.model.order;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import libs.ddd.Aggregate;
 import libs.errs.Error;
 import libs.errs.Guard;
@@ -15,9 +11,15 @@ import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Location;
 import microarch.delivery.core.domain.model.Volume;
+import microarch.delivery.core.domain.model.order.events.OrderAssignedDomainEvent;
+import microarch.delivery.core.domain.model.order.events.OrderCompletedDomainEvent;
 
 import java.util.UUID;
 
+/**
+ * Order aggregate root: carries the delivery target {@code Location} and {@code Volume}, guards the status transitions
+ * {@code Created -> Assigned -> Completed}, and raises the corresponding domain events.
+ */
 @Entity
 @Table(name = "\"order\"")
 @Getter
@@ -48,23 +50,31 @@ public class Order extends Aggregate<UUID> {
     }
 
     /**
-     * Allowed transition: {@link OrderStatus#Created} -&gt; {@link OrderStatus#Assigned}.
+     * Allowed transition: {@link OrderStatus#Created} -&gt; {@link OrderStatus#Assigned}. On success raises
+     * {@link OrderAssignedDomainEvent}.
      *
      * @return if requested transition is allowed, successful result contains modified Order <i>(this obj.)</i>;
      *         otherwise - result contains err description
      */
     public Result<Order, Error> markAsAssigned() {
-        return transition(OrderStatus.Created, OrderStatus.Assigned);
+        val result = transition(OrderStatus.Created, OrderStatus.Assigned);
+        if (result.isSuccess())
+            raiseDomainEvent(new OrderAssignedDomainEvent(this));
+        return result;
     }
 
     /**
-     * Allowed transition: {@link OrderStatus#Assigned} -&gt; {@link OrderStatus#Completed}.
+     * Allowed transition: {@link OrderStatus#Assigned} -&gt; {@link OrderStatus#Completed}. On success raises
+     * {@link OrderCompletedDomainEvent}.
      *
      * @return if requested transition is allowed, successful result contains modified Order <i>(this obj.)</i>;
      *         otherwise - result contains err description
      */
     public Result<Order, Error> markAsCompleted() {
-        return transition(OrderStatus.Assigned, OrderStatus.Completed);
+        val result = transition(OrderStatus.Assigned, OrderStatus.Completed);
+        if (result.isSuccess())
+            raiseDomainEvent(new OrderCompletedDomainEvent(this));
+        return result;
     }
 
     private Result<Order, Error> transition(final OrderStatus expectedStatus, final OrderStatus targetStatus) {

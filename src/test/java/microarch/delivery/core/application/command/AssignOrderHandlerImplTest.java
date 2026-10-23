@@ -1,5 +1,6 @@
 package microarch.delivery.core.application.command;
 
+import libs.ddd.DomainEventPublisher;
 import lombok.val;
 import microarch.delivery.Constants;
 import microarch.delivery.core.domain.model.Location;
@@ -22,9 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AssignOrderHandlerImplTest {
@@ -35,11 +34,15 @@ class AssignOrderHandlerImplTest {
     @Mock
     private CourierRepository courierRepository;
 
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
+
     private AssignOrderHandlerImpl handler;
 
     @BeforeEach
     void setUp() {
-        handler = new AssignOrderHandlerImpl(orderRepository, courierRepository, new OrderAssignServiceImpl());
+        handler = new AssignOrderHandlerImpl(orderRepository, courierRepository, new OrderAssignServiceImpl(),
+                domainEventPublisher);
     }
 
     private static Order newOrder() {
@@ -61,6 +64,7 @@ class AssignOrderHandlerImplTest {
         assertThat(result.getError().getCode()).isEqualTo(Constants.ERR_CODE_OBJ_IS_NULL);
         verify(orderRepository, never()).update(any(Order.class));
         verify(courierRepository, never()).update(any(Courier.class));
+        verifyNoInteractions(domainEventPublisher);
     }
 
     /* ---------- no order to assign ---------- */
@@ -116,5 +120,6 @@ class AssignOrderHandlerImplTest {
         verify(orderRepository).update(order);
         verify(courierRepository).update(nearest);
         verify(courierRepository, never()).update(farthest);
+        verify(domainEventPublisher).publish(List.of(order));
     }
 }

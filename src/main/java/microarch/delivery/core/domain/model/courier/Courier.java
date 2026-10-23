@@ -1,10 +1,6 @@
 package microarch.delivery.core.domain.model.courier;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import libs.ddd.Aggregate;
 import libs.errs.Error;
@@ -20,12 +16,15 @@ import microarch.delivery.core.domain.model.Location;
 import microarch.delivery.core.domain.model.Volume;
 import microarch.delivery.core.domain.model.order.Order;
 
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Courier aggregate root: tracks the current {@code Location}, guards the total assigned volume against
+ * {@code MAX_VOLUME}, and owns the {@code Assignment} entities persisted with the aggregate.
+ */
 @Entity()
 @Table(name = "courier", indexes = { @Index(name = "courier_name", columnList = "name", unique = true) })
 @Getter
@@ -41,8 +40,9 @@ public class Courier extends Aggregate<UUID> {
     private final Volume maxVolume = Volume.create(MAX_VOLUME).getValueOrThrow();
 
     @Getter(AccessLevel.NONE)
-    @Transient
-    private final Map<UUID, Assignment> orderIdToAssignMap = new ConcurrentHashMap<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "courier_id")
+    private Set<Assignment> assignments = new HashSet<>();
 
     private Courier(final String name, final Location location) {
         super(UUID.randomUUID());
@@ -64,7 +64,7 @@ public class Courier extends Aggregate<UUID> {
      * @return unmodifiable set of Assignments
      */
     public Set<Assignment> getAssignments() {
-        return Set.copyOf(orderIdToAssignMap.values());
+        return Set.copyOf(assignments);
     }
 
     /**
@@ -93,8 +93,7 @@ public class Courier extends Aggregate<UUID> {
         if (newOrderVolume == null) {
             return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "newOrderVolume must not be null"));
         } else {
-            val currentVolume = orderIdToAssignMap.values().stream().map(it -> it.getVolume().getValue()).reduce(0,
-                    Integer::sum);
+            val currentVolume = assignments.stream().map(it -> it.getVolume().getValue()).reduce(0, Integer::sum);
             val plannedVolume = currentVolume + newOrderVolume.getValue();
 
             return (plannedVolume > maxVolume.getValue())
@@ -106,7 +105,7 @@ public class Courier extends Aggregate<UUID> {
 
     public Result<Courier, Error> assignOrder(@NotNull final Order order) {
         val checkResult = Optional.ofNullable(order).map(o -> checkCanAssignOneMore(o.getVolume())).map(result -> {
-            if (orderIdToAssignMap.containsKey(order.getId()))
+            if (findAssignment(order.getId()).isPresent())
                 return Result
                         .failure(Error.of("courier.already.has.order", "Courier already has orderId=" + order.getId()));
             else
@@ -119,7 +118,7 @@ public class Courier extends Aggregate<UUID> {
 
         val assignment = Assignment.create(order.getId(), order.getVolume(), order.getLocation()).getValueOrThrow();
 
-        orderIdToAssignMap.put(assignment.getOrderId(), assignment);
+        assignments.add(assignment);
 
         return Result.success(this);
     }
@@ -128,7 +127,7 @@ public class Courier extends Aggregate<UUID> {
         if (orderId == null)
             return Result.failure(Error.of(Constants.ERR_CODE_OBJ_IS_NULL, "orderId must not be null"));
 
-        val assignment = orderIdToAssignMap.get(orderId);
+        val assignment = findAssignment(orderId).orElse(null);
         if (assignment == null)
             return Result.failure(Error.of("courier.order.not.found", "Courier does not have orderId=" + orderId));
 
@@ -138,8 +137,20 @@ public class Courier extends Aggregate<UUID> {
 
         val completeResult = assignment.complete(location);
         if (completeResult.isSuccess())
-            orderIdToAssignMap.remove(orderId);
+            assignments.remove(assignment);
         return completeResult.map(x -> this);
+    }
+
+    /**
+     * Finds the assignment for the given order among the courier's active assignments.
+     *
+     * @param orderId
+     *            id of the assigned order
+     *
+     * @return the assignment if present, empty otherwise
+     */
+    private Optional<Assignment> findAssignment(final UUID orderId) {
+        return assignments.stream().filter(it -> it.getOrderId().equals(orderId)).findFirst();
     }
 
     /**
